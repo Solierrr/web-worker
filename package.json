@@ -1,8 +1,12 @@
 {
   "name": "@solierrr/cloudflare-worker",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "wrangler dev",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "honeypot:sync": "node scripts/sync-honeypot-paths.mjs",
+    "honeypot:check": "node scripts/sync-honeypot-paths.mjs --check",
     "check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy"
   },
