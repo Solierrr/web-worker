@@ -1,6 +1,6 @@
-interface Env {
-  ORIGIN_HOST: string;
-}
+import type { Env } from "./env.ts";
+import { banIp, isMockMode, purgeExpiredBans } from "./honeypot/ban.ts";
+import { decoyResponse, matchHoneypot } from "./honeypot/honeypot.ts";
 
 const unavailablePage = `<!doctype html>
 <html lang="pt-BR">
@@ -38,8 +38,27 @@ function serviceUnavailable(): Response {
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const publicUrl = new URL(request.url);
+
+    const honeypot = matchHoneypot(publicUrl.pathname);
+    if (honeypot) {
+      const ip = request.headers.get("cf-connecting-ip");
+      console.warn(
+        JSON.stringify({
+          event: "honeypot_hit",
+          trap: honeypot.trap,
+          path: publicUrl.pathname,
+          method: request.method,
+          ip,
+          country: request.cf?.country,
+          userAgent: request.headers.get("user-agent"),
+        }),
+      );
+      ctx.waitUntil(banIp(env, ip, honeypot.trap, { mock: isMockMode(env, publicUrl.hostname, ip) }));
+      return decoyResponse();
+    }
+
     const originHost = env.ORIGIN_HOST?.trim().toLowerCase();
 
     // Never fetch the public hostname: it is covered by this Worker's route.
@@ -62,5 +81,9 @@ export default {
       // DNS, TLS, or connection failures mean the ephemeral origin is offline.
       return serviceUnavailable();
     }
+  },
+
+  async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(purgeExpiredBans(env));
   },
 } satisfies ExportedHandler<Env>;
