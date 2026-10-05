@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "wrangler dev",
+    "honeypot:sync": "node scripts/sync-honeypot-paths.mjs",
+    "honeypot:check": "node scripts/sync-honeypot-paths.mjs --check",
     "check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy"
   },
