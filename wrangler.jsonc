@@ -17,6 +17,12 @@
   "triggers": {
     "crons": ["*/15 * * * *"]
   },
+  "previews": {
+    "vars": {
+      "ORIGIN_HOST": "",
+      "HONEYPOT_BAN_TTL_SECONDS": "3600"
+    }
+  },
   "observability": {
     "enabled": true
   }
