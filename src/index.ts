@@ -1,6 +1,7 @@
 import type { Env } from "./env.ts";
 import { banIp, isMockMode, purgeExpiredBans } from "./honeypot/ban.ts";
 import { decoyResponse, matchHoneypot } from "./honeypot/honeypot.ts";
+import { exportLog, exportSpan, newTrace } from "./telemetry.ts";
 
 const unavailablePage = `<!doctype html>
 <html lang="pt-BR">
@@ -55,6 +56,12 @@ export default {
           userAgent: request.headers.get("user-agent"),
         }),
       );
+      exportLog(env, ctx, "warn", "honeypot_hit", {
+        trap: honeypot.trap,
+        path: publicUrl.pathname,
+        method: request.method,
+        country: typeof request.cf?.country === "string" ? request.cf.country : undefined,
+      });
       ctx.waitUntil(banIp(env, ip, honeypot.trap, { mock: isMockMode(env, publicUrl.hostname, ip) }));
       return decoyResponse();
     }
@@ -71,14 +78,32 @@ export default {
     originUrl.hostname = originHost;
     originUrl.port = "";
 
+    const trace = newTrace();
+    const startedAt = Date.now();
     try {
       const originRequest = new Request(originUrl, request);
+      originRequest.headers.set("traceparent", trace.traceparent);
       const response = await fetch(originRequest);
 
+      exportSpan(env, ctx, trace, `origin ${request.method}`, startedAt, response.status < 500, {
+        "http.request.method": request.method,
+        "http.response.status_code": response.status,
+        "server.address": originHost,
+      });
+
       // Pass client errors through; only origin failures use the fallback.
-      return response.status >= 500 ? serviceUnavailable() : response;
+      if (response.status >= 500) {
+        exportLog(env, ctx, "error", "origin_error", { status: response.status, path: publicUrl.pathname }, trace);
+        return serviceUnavailable();
+      }
+      return response;
     } catch {
       // DNS, TLS, or connection failures mean the ephemeral origin is offline.
+      exportSpan(env, ctx, trace, `origin ${request.method}`, startedAt, false, {
+        "http.request.method": request.method,
+        "server.address": originHost,
+      });
+      exportLog(env, ctx, "error", "origin_unreachable", { path: publicUrl.pathname }, trace);
       return serviceUnavailable();
     }
   },
