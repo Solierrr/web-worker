@@ -5,4 +5,7 @@ export interface Env {
   HONEYPOT_LIST_ID?: string;
   HONEYPOT_BAN_TTL_SECONDS?: string;
   HONEYPOT_MODE?: string;
+  OTLP_ENDPOINT?: string;
+  OTLP_AUTH?: string;
+  DEPLOYMENT_ENVIRONMENT?: string;
 }
