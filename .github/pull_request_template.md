@@ -6,16 +6,16 @@
 
 [preencha-me]
 
-## Recursos impactados
+## Telas afetadas
 
-[preencha-me] | Sem impacto relevante
+[preencha-me] | Sem telas afetadas
 
-## Rollback
+## Como testar
 
-[preencha-me] | Não vem ao caso
+[preencha-me] | Sem testes possíveis
 
-## Como validar
+## Evidências
 
-[preencha-me] | Sem validação necessária
+[preencha-me] | Sem evidências visuais
 
 Closes #
