@@ -1,0 +1,15 @@
+name: Environment Status
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  deployments: write
+
+jobs:
+  render:
+    uses: Solierrr/.github/.github/workflows/environment-status.yml@main
+    with:
+      environment: ALIVE
+      check: http
+      url: https://solarianetwork.site/
