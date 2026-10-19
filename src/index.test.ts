@@ -113,7 +113,7 @@ describe("worker", () => {
   it("reconhece a resposta HTML do Kong enviada aos navegadores", async () => {
     globalThis.fetch = (async () => new Response(
       '<!doctype html><html><head><title>Error</title></head><body><h1>Error</h1><p>no Route matched with those values.</p><p>request_id: example</p></body></html>',
-      { status: 404, headers: { server: "kong/3.9.3", "content-type": "text/html; charset=utf-8" } },
+      { status: 404, headers: { server: "cloudflare", "content-type": "text/html; charset=utf-8" } },
     )) as typeof fetch;
     const response = await worker.fetch(new Request("https://solarianetwork.site/", { headers: { accept: "text/html" } }), env, ctx);
     assert.equal(response.status, 503);

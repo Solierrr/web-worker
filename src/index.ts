@@ -21,7 +21,7 @@ function serviceUnavailable(): Response {
 
 async function isUnavailableOrigin(response: Response): Promise<boolean> {
   if (response.status >= 500) return true;
-  if (response.status !== 404 || !response.headers.get("server")?.toLowerCase().startsWith("kong/")) return false;
+  if (response.status !== 404) return false;
   try {
     if (response.headers.get("content-type")?.includes("text/html")) {
       return (await response.clone().text()).includes("<p>no Route matched with those values.</p>");
