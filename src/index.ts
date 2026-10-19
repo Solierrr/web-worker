@@ -23,6 +23,9 @@ async function isUnavailableOrigin(response: Response): Promise<boolean> {
   if (response.status >= 500) return true;
   if (response.status !== 404 || !response.headers.get("server")?.toLowerCase().startsWith("kong/")) return false;
   try {
+    if (response.headers.get("content-type")?.includes("text/html")) {
+      return (await response.clone().text()).includes("<p>no Route matched with those values.</p>");
+    }
     const body: unknown = await response.clone().json();
     return typeof body === "object" && body !== null && "message" in body && body.message === "no Route matched with those values";
   } catch {
