@@ -1,30 +1,11 @@
+import { createUnavailablePage } from "./unavailable.ts";
+
 import type { Env } from "./env.ts";
 import { banIp, isMockMode, purgeExpiredBans } from "./honeypot/ban.ts";
 import { decoyResponse, matchHoneypot } from "./honeypot/honeypot.ts";
 import { exportLog, exportSpan, newTrace } from "./telemetry.ts";
 
-const unavailablePage = `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex">
-    <title>Solaria temporariamente indisponível</title>
-    <style>
-      :root { color-scheme: light; font-family: system-ui, sans-serif; }
-      body { min-height: 100vh; margin: 0; display: grid; place-items: center; background: #f7f8fa; color: #17202a; }
-      main { max-width: 32rem; margin: 1.5rem; padding: 2rem; border: 1px solid #e5e7eb; border-radius: 1rem; background: white; }
-      h1 { margin-top: 0; font-size: 1.5rem; }
-      p { line-height: 1.6; color: #4b5563; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>Estamos voltando em breve</h1>
-      <p>O Solaria está temporariamente indisponível. Tente novamente em alguns minutos.</p>
-    </main>
-  </body>
-</html>`;
+const unavailablePage = createUnavailablePage({ rotateShape: true });
 
 function serviceUnavailable(): Response {
   return new Response(unavailablePage, {

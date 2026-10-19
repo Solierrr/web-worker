@@ -75,5 +75,18 @@ describe("worker", () => {
     globalThis.fetch = (async () => new Response("erro", { status: 502 })) as typeof fetch;
     const response = await worker.fetch(new Request("https://solarianetwork.site/pt-BR/login"), env, ctx);
     assert.equal(response.status, 503);
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    const html = await response.text();
+    assert.match(html, /Estamos temporariamente indisponíveis/);
+    assert.match(html, /data-rotate-shape="true"/);
+    assert.match(html, /id="hands-mark"/);
+    assert.doesNotMatch(html, /Tentar novamente|<script[^>]+src=|<link[^>]+href=/);
+  });
+
+  it("usa a mesma tela quando a origem nao responde", async () => {
+    globalThis.fetch = (async () => { throw new TypeError("connection failed"); }) as typeof fetch;
+    const response = await worker.fetch(new Request("https://solarianetwork.site/"), env, ctx);
+    assert.equal(response.status, 503);
+    assert.match(await response.text(), /id="logo-hint"/);
   });
 });
