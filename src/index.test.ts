@@ -115,8 +115,28 @@ describe("worker", () => {
       '<!doctype html><html><head><title>Error</title></head><body><h1>Error</h1><p>no Route matched with those values.</p><p>request_id: example</p></body></html>',
       { status: 404, headers: { server: "cloudflare", "content-type": "text/html; charset=utf-8" } },
     )) as typeof fetch;
-    const response = await worker.fetch(new Request("https://solarianetwork.site/", { headers: { accept: "text/html" } }), env, ctx);
+    const response = await worker.fetch(new Request("https://solarianetwork.site/pt-BR", { headers: { accept: "text/html" } }), env, ctx);
     assert.equal(response.status, 503);
     assert.match(await response.text(), /Estamos temporariamente indisponíveis/);
+  });
+
+  it("redireciona antes de consultar a origem e traduz o fallback sem cluster", async () => {
+    const headers = { accept: "text/html", "accept-language": "es-MX, en;q=0.5" };
+    const redirect = await worker.fetch(new Request("https://solarianetwork.site/login?step=signin", { headers }), { ORIGIN_HOST: "" }, ctx);
+    assert.equal(redirect.status, 302);
+    assert.equal(redirect.headers.get("location"), "/es-ES/iniciar-sesion?step=signin");
+    assert.equal(outbound.length, 0);
+    const unavailable = await worker.fetch(new Request("https://solarianetwork.site/es-ES/iniciar-sesion?step=signin", { headers }), { ORIGIN_HOST: "" }, ctx);
+    assert.equal(unavailable.status, 503);
+    assert.equal(unavailable.headers.get("content-language"), "es-ES");
+    assert.match(unavailable.headers.get("set-cookie") ?? "", /solaria_language=es-ES/);
+    assert.match(await unavailable.text(), /Temporalmente no disponibles/);
+  });
+
+  it("nao redireciona honeypot mesmo em navegacoes HTML", async () => {
+    const response = await worker.fetch(new Request("https://solarianetwork.site/.env", { headers: { accept: "text/html", "accept-language": "en" } }), { ORIGIN_HOST: "" }, ctx);
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("location"), null);
+    assert.equal(response.headers.get("set-cookie"), null);
   });
 });

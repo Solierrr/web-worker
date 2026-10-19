@@ -7,6 +7,8 @@
     "test": "node --test \"src/**/*.test.ts\"",
     "honeypot:sync": "node scripts/sync-honeypot-paths.mjs",
     "honeypot:check": "node scripts/sync-honeypot-paths.mjs --check",
+    "language:sync": "node scripts/sync-language-routing.mjs",
+    "language:check": "node scripts/sync-language-routing.mjs --check",
     "check": "wrangler deploy --dry-run",
     "deploy": "wrangler deploy"
   },
