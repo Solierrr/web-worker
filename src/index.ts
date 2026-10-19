@@ -19,6 +19,17 @@ function serviceUnavailable(): Response {
   });
 }
 
+async function isUnavailableOrigin(response: Response): Promise<boolean> {
+  if (response.status >= 500) return true;
+  if (response.status !== 404 || !response.headers.get("server")?.toLowerCase().startsWith("kong/")) return false;
+  try {
+    const body: unknown = await response.clone().json();
+    return typeof body === "object" && body !== null && "message" in body && body.message === "no Route matched with those values";
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const publicUrl = new URL(request.url);
@@ -65,15 +76,15 @@ export default {
       const originRequest = new Request(originUrl, request);
       originRequest.headers.set("traceparent", trace.traceparent);
       const response = await fetch(originRequest);
+      const unavailable = await isUnavailableOrigin(response);
 
-      exportSpan(env, ctx, trace, `origin ${request.method}`, startedAt, response.status < 500, {
+      exportSpan(env, ctx, trace, `origin ${request.method}`, startedAt, !unavailable, {
         "http.request.method": request.method,
         "http.response.status_code": response.status,
         "server.address": originHost,
       });
 
-      // Pass client errors through; only origin failures use the fallback.
-      if (response.status >= 500) {
+      if (unavailable) {
         exportLog(env, ctx, "error", "origin_error", { status: response.status, path: publicUrl.pathname }, trace);
         return serviceUnavailable();
       }

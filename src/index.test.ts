@@ -89,4 +89,24 @@ describe("worker", () => {
     assert.equal(response.status, 503);
     assert.match(await response.text(), /id="logo-hint"/);
   });
+
+  it("mostra a tela independente quando o Kong esta sem rota para o cluster", async () => {
+    globalThis.fetch = (async () => Response.json(
+      { message: "no Route matched with those values", request_id: "example" },
+      { status: 404, headers: { server: "kong/3.9.3", "x-kong-response-latency": "0" } },
+    )) as typeof fetch;
+    const response = await worker.fetch(new Request("https://solarianetwork.site/"), env, ctx);
+    assert.equal(response.status, 503);
+    assert.match(await response.text(), /Estamos temporariamente indisponíveis/);
+  });
+
+  it("preserva o corpo do 404 normal da aplicacao que passa pelo Kong", async () => {
+    globalThis.fetch = (async () => Response.json(
+      { message: "Page not found" },
+      { status: 404, headers: { server: "kong/3.9.3" } },
+    )) as typeof fetch;
+    const response = await worker.fetch(new Request("https://solarianetwork.site/pagina-ausente"), env, ctx);
+    assert.equal(response.status, 404);
+    assert.deepEqual(await response.json(), { message: "Page not found" });
+  });
 });
