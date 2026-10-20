@@ -4,19 +4,22 @@ import type { Env } from "./env.ts";
 import { banIp, isMockMode, purgeExpiredBans } from "./honeypot/ban.ts";
 import { decoyResponse, matchHoneypot } from "./honeypot/honeypot.ts";
 import { exportLog, exportSpan, newTrace } from "./telemetry.ts";
+import { languageRedirect, requestLanguage, withLanguagePreference } from "./i18n/language.ts";
 
-const unavailablePage = createUnavailablePage({ rotateShape: true });
-
-function serviceUnavailable(): Response {
-  return new Response(unavailablePage, {
+function serviceUnavailable(request: Request): Response {
+  const language = requestLanguage(request);
+  const url = new URL(request.url);
+  const unavailablePage = createUnavailablePage({ rotateShape: true, language, pathname: url.pathname, search: url.search });
+  return withLanguagePreference(new Response(request.method === "HEAD" ? null : unavailablePage, {
     status: 503,
     headers: {
       "cache-control": "no-store",
       "content-type": "text/html; charset=utf-8",
       "retry-after": "60",
       "x-content-type-options": "nosniff",
+      "content-language": language,
     },
-  });
+  }), request);
 }
 
 async function isUnavailableOrigin(response: Response): Promise<boolean> {
@@ -61,11 +64,13 @@ export default {
       return decoyResponse();
     }
 
+    const redirect = languageRedirect(request);
+    if (redirect) return withLanguagePreference(redirect, request);
     const originHost = env.ORIGIN_HOST?.trim().toLowerCase();
 
     // Never fetch the public hostname: it is covered by this Worker's route.
     if (!originHost || originHost === publicUrl.hostname.toLowerCase()) {
-      return serviceUnavailable();
+      return serviceUnavailable(request);
     }
 
     const originUrl = new URL(publicUrl);
@@ -89,9 +94,9 @@ export default {
 
       if (unavailable) {
         exportLog(env, ctx, "error", "origin_error", { status: response.status, path: publicUrl.pathname }, trace);
-        return serviceUnavailable();
+        return serviceUnavailable(request);
       }
-      return response;
+      return withLanguagePreference(response, request);
     } catch {
       // DNS, TLS, or connection failures mean the ephemeral origin is offline.
       exportSpan(env, ctx, trace, `origin ${request.method}`, startedAt, false, {
@@ -99,7 +104,7 @@ export default {
         "server.address": originHost,
       });
       exportLog(env, ctx, "error", "origin_unreachable", { path: publicUrl.pathname }, trace);
-      return serviceUnavailable();
+      return serviceUnavailable(request);
     }
   },
 
