@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/Solierrr/web-worker/compare/v1.1.0...v1.2.0) (2026-10-20)
+
+
+### Features
+
+* localize edge routing and standalone unavailable page ([#9](https://github.com/Solierrr/web-worker/issues/9)) ([6d78558](https://github.com/Solierrr/web-worker/commit/6d785583788493a281bd5fd01452983a20c531fc))
+
 ## [1.1.0](https://github.com/Solierrr/web-worker/compare/v1.0.1...v1.1.0) (2026-10-19)
 
 
