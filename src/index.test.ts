@@ -77,17 +77,21 @@ describe("worker", () => {
     assert.equal(response.status, 503);
     assert.equal(response.headers.get("cache-control"), "no-store");
     const html = await response.text();
-    assert.match(html, /Estamos temporariamente indisponíveis/);
+    assert.match(html, /Oops\.\.\. Alguma coisa de errado não está certo\.\.\./);
+    assert.match(html, /Estamos temporariamente indisponíveis, tente novamente mais tarde\./);
+    assert.match(html, /<title>Oops\.\.\.<\/title>/);
     assert.match(html, /data-rotate-shape="true"/);
     assert.match(html, /id="hands-mark"/);
-    assert.doesNotMatch(html, /Tentar novamente|<script[^>]+src=|<link[^>]+href=/);
+    assert.match(html, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/);
+    assert.equal((html.match(/<canvas data-grid>/g) ?? []).length, 4);
+    assert.doesNotMatch(html, /Tentar novamente|toque na logo|<script[^>]+src=|<link[^>]+href="(?!data:)/);
   });
 
   it("usa a mesma tela quando a origem nao responde", async () => {
     globalThis.fetch = (async () => { throw new TypeError("connection failed"); }) as typeof fetch;
     const response = await worker.fetch(new Request("https://solarianetwork.site/"), env, ctx);
     assert.equal(response.status, 503);
-    assert.match(await response.text(), /id="logo-hint"/);
+    assert.doesNotMatch(await response.text(), /id="logo-hint"|toque na logo/);
   });
 
   it("mostra a tela independente quando o Kong esta sem rota para o cluster", async () => {
@@ -97,7 +101,7 @@ describe("worker", () => {
     )) as typeof fetch;
     const response = await worker.fetch(new Request("https://solarianetwork.site/"), env, ctx);
     assert.equal(response.status, 503);
-    assert.match(await response.text(), /Estamos temporariamente indisponíveis/);
+    assert.match(await response.text(), /Oops\.\.\. Alguma coisa de errado não está certo\.\.\./);
   });
 
   it("preserva o corpo do 404 normal da aplicacao que passa pelo Kong", async () => {
@@ -117,7 +121,7 @@ describe("worker", () => {
     )) as typeof fetch;
     const response = await worker.fetch(new Request("https://solarianetwork.site/pt-BR", { headers: { accept: "text/html" } }), env, ctx);
     assert.equal(response.status, 503);
-    assert.match(await response.text(), /Estamos temporariamente indisponíveis/);
+    assert.match(await response.text(), /Oops\.\.\. Alguma coisa de errado não está certo\.\.\./);
   });
 
   it("redireciona antes de consultar a origem e traduz o fallback sem cluster", async () => {
@@ -130,7 +134,9 @@ describe("worker", () => {
     assert.equal(unavailable.status, 503);
     assert.equal(unavailable.headers.get("content-language"), "es-ES");
     assert.match(unavailable.headers.get("set-cookie") ?? "", /solaria_language=es-ES/);
-    assert.match(await unavailable.text(), /Temporalmente no disponibles/);
+    const page = await unavailable.text();
+    assert.match(page, /Oops\.\.\. Algo anda mal, y eso no está bien\.\.\./);
+    assert.match(page, /<title>Oops\.\.\.<\/title>/);
   });
 
   it("nao redireciona honeypot mesmo em navegacoes HTML", async () => {

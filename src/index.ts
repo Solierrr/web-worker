@@ -9,7 +9,7 @@ import { languageRedirect, requestLanguage, withLanguagePreference } from "./i18
 function serviceUnavailable(request: Request): Response {
   const language = requestLanguage(request);
   const url = new URL(request.url);
-  const unavailablePage = createUnavailablePage({ rotateShape: true, language, pathname: url.pathname, search: url.search });
+  const unavailablePage = createUnavailablePage({ language, pathname: url.pathname, search: url.search });
   return withLanguagePreference(new Response(request.method === "HEAD" ? null : unavailablePage, {
     status: 503,
     headers: {
