@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/Solierrr/web-worker/compare/v1.2.0...v1.3.0) (2026-10-22)
+
+
+### Features
+
+* refresh the unavailable page with the shared logo, canvas, favicon and new copy ([29c7f41](https://github.com/Solierrr/web-worker/commit/29c7f417501fda41808b029e15dd05a003ffa2bc))
+
 ## [1.2.0](https://github.com/Solierrr/web-worker/compare/v1.1.0...v1.2.0) (2026-10-20)
 
 
