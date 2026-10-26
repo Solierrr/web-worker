@@ -26,6 +26,7 @@ body { margin: 0; background: var(--color-operational-surface); color: var(--col
 main { position: relative; isolation: isolate; min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 3rem 1.5rem; }
 .content { position: relative; width: 100%; max-width: 44rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; padding: 1rem; text-align: center; }
 @media (min-width: 640px) { .content { padding: 1.5rem; } }
+@media (min-width: 1024px) { :root { --text-subtitle: 2rem; --text-label: 1.35rem; } .content { max-width: 52rem; gap: 2rem; } }
 .copy { width: 100%; max-width: 48rem; display: flex; flex-direction: column; gap: .25rem; }
 h1 { margin: 0; font-size: var(--text-subtitle); font-weight: 600; line-height: 1.25; }
 p { margin: 0; color: var(--color-operational-muted); font-size: var(--text-label); line-height: 1.625; }

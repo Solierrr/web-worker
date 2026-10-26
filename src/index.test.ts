@@ -81,7 +81,7 @@ describe("worker", () => {
     assert.match(html, /Estamos temporariamente indisponíveis, tente novamente mais tarde\./);
     assert.match(html, /<title>Oops\.\.\.<\/title>/);
     assert.match(html, /data-rotate-shape="true"/);
-    assert.match(html, /id="hands-mark"/);
+    assert.match(html, /id="logo-mark"/);
     assert.match(html, /<link rel="icon" type="image\/svg\+xml" href="data:image\/svg\+xml;base64,/);
     assert.equal((html.match(/<canvas data-grid>/g) ?? []).length, 4);
     assert.doesNotMatch(html, /Tentar novamente|toque na logo|<script[^>]+src=|<link[^>]+href="(?!data:)/);
