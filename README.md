@@ -58,4 +58,6 @@ npm run check
 npm test
 ```
 
-A publicação pode ser feita pela integração GitHub da Cloudflare ou com `npm run deploy`.
+Este repositório se chamava `web-worker`; o script na Cloudflare continua com o nome `web-worker`, definido em `wrangler.jsonc`, porque trocar o nome cria outro Worker e a rota do domínio raiz só aponta para um.
+
+A publicação é o workflow `Deploy` (manual), que roda os testes e o `wrangler deploy` com os secrets `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` do repositório. O token (`workers-deploy`) é criado pelo Terraform no `infra-platform`. Se a integração GitHub da Cloudflare ainda estiver ligada no painel, ela publica em paralelo; desligue-a para deixar o workflow como único caminho. `npm run deploy` continua valendo para uma publicação local.
