@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/Solierrr/worker-failover/compare/v1.2.0...v1.3.0) (2026-10-31)
+
+
+### Features
+
+* refresh the unavailable page with the shared logo, canvas, favicon and new copy ([29c7f41](https://github.com/Solierrr/worker-failover/commit/29c7f417501fda41808b029e15dd05a003ffa2bc))
+
+
+### Bug Fixes
+
+* restore hand logo and original unavailable favicon ([f584f2b](https://github.com/Solierrr/worker-failover/commit/f584f2be39a6f648a3cdb6d07f8fd039bb0ff847))
+* update unavailable page branding and desktop typography ([#12](https://github.com/Solierrr/worker-failover/issues/12)) ([8ba086d](https://github.com/Solierrr/worker-failover/commit/8ba086dc1aa28efe4c8d3b1ed3c125ff1bebdfc3))
+
 ## [1.2.0](https://github.com/Solierrr/web-worker/compare/v1.1.0...v1.2.0) (2026-10-20)
 
 
